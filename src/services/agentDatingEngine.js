@@ -5,27 +5,32 @@ export const VENUES = [
   {
     name: "Velvet Underground Vinyl & Wine Speakeasy",
     vibe: "Dim candlelight, rare vinyl records, velvet booths, vintage cocktails",
-    type: "romantic"
+    type: "romantic",
+    settingIntro: "The warm crackle of an original Japanese vinyl pressing fills the room as candles flicker against dark mahogany."
   },
   {
     name: "Third-Wave Roastery & Botanical Greenhouse",
     vibe: "Natural sunlit glasshouse, Ethiopian single-origins, fiddle leaf figs",
-    type: "creative"
+    type: "creative",
+    settingIntro: "Sunlight streams through towering glass conservatory walls as the aroma of freshly roasted pour-over coffee wafts between lush greenery."
   },
   {
     name: "High-Altitude Cliffside Lookout & Starry Skies",
     vibe: "Crisp mountain air, Pacific sunset, telescope station, campfire warmth",
-    type: "adventurous"
+    type: "adventurous",
+    settingIntro: "A cool coastal wind blows across the cliff's edge as twilight deepens over the Pacific horizon and the stars begin to emerge."
   },
   {
     name: "Artisan Kitchen & Omakase Counter",
     vibe: "Handcrafted ceramics, chef counter, intimate culinary storytelling",
-    type: "culinary"
+    type: "culinary",
+    settingIntro: "Behind a tranquil sliding shoji door, an intimate wooden counter sets the stage for handcrafted seasonal courses and quiet conversation."
   },
   {
     name: "Mid-Century Design Gallery & Tea Salon",
     vibe: "Bauhaus furniture, Japanese matcha whisking, architectural sketches",
-    type: "intellectual"
+    type: "intellectual",
+    settingIntro: "Surrounded by sculptural mid-century lounge chairs and warm architectural lighting, a bamboo whisk creates velvety green matcha foam."
   }
 ];
 
@@ -38,8 +43,8 @@ export function calculateCompatibility(personA, personB) {
   }
 
   // 1. Trait compatibility
-  const traitsA = personA.traits || { ambition: 80, intellect: 80, spontaneity: 70, banter: 80, empathy: 80, creativity: 80 };
-  const traitsB = personB.traits || { ambition: 80, intellect: 80, spontaneity: 70, banter: 80, empathy: 80, creativity: 80 };
+  const traitsA = personA.traits || { ambition: 85, intellect: 85, spontaneity: 75, banter: 85, empathy: 85, creativity: 85 };
+  const traitsB = personB.traits || { ambition: 85, intellect: 85, spontaneity: 75, banter: 85, empathy: 85, creativity: 85 };
 
   // Calculate similarity and complementarity
   const ambitionDiff = Math.abs(traitsA.ambition - traitsB.ambition);
@@ -49,8 +54,8 @@ export function calculateCompatibility(personA, personB) {
   const creativityAvg = (traitsA.creativity + traitsB.creativity) / 2;
 
   // Base score from trait harmony
-  let traitScore = 100 - (ambitionDiff * 0.4 + intellectDiff * 0.3 + banterDiff * 0.3);
-  traitScore = Math.max(50, Math.min(99, traitScore));
+  let traitScore = 100 - (ambitionDiff * 0.35 + intellectDiff * 0.3 + banterDiff * 0.25);
+  traitScore = Math.max(55, Math.min(99, traitScore));
 
   // 2. Needs and Interests synergy
   const interestsA = (personA.analysis?.interests || []).map(i => i.toLowerCase());
@@ -79,8 +84,8 @@ export function calculateCompatibility(personA, personB) {
   });
 
   const synergyBoost = Math.min(18, sharedInterestsCount * 4 + sharedHobbiesCount * 3);
-  let overallScore = Math.round(traitScore * 0.75 + synergyBoost + (empathyAvg / 100) * 10);
-  overallScore = Math.max(68, Math.min(98, overallScore));
+  let overallScore = Math.round(traitScore * 0.72 + synergyBoost + (empathyAvg / 100) * 12);
+  overallScore = Math.max(70, Math.min(98, overallScore));
 
   // Generate specific matching highlights
   const factors = [];
@@ -112,10 +117,14 @@ export function calculateCompatibility(personA, personB) {
 export function getOrSimulateDate(personA, personB, customVenue = null) {
   if (!personA || !personB) return null;
 
-  // Check precomputed dates first
+  const venue = customVenue || VENUES[0];
+
+  // If a precomputed date matches the default venue or is standard, use it;
+  // If custom venue is requested, generate dynamic contextual date
   const existing = PRECOMPUTED_DATES.find(
-    d => (d.agentAId === personA.id && d.agentBId === personB.id) ||
-         (d.agentAId === personB.id && d.agentBId === personA.id)
+    d => ((d.agentAId === personA.id && d.agentBId === personB.id) ||
+         (d.agentAId === personB.id && d.agentBId === personA.id)) &&
+         (!customVenue || d.venue?.name === customVenue.name)
   );
 
   if (existing) {
@@ -124,7 +133,9 @@ export function getOrSimulateDate(personA, personB, customVenue = null) {
 
   // Otherwise generate dynamic high-fidelity date simulation
   const compatibility = calculateCompatibility(personA, personB);
-  const venue = customVenue || VENUES[Math.floor(Math.random() * VENUES.length)];
+
+  const firstA = personA.name.split(' ')[0];
+  const firstB = personB.name.split(' ')[0];
 
   const hobbyA = personA.analysis?.hobbies?.[0] || "creative projects";
   const hobbyB = personB.analysis?.hobbies?.[0] || "deep exploration";
@@ -138,55 +149,64 @@ export function getOrSimulateDate(personA, personB, customVenue = null) {
       speakerId: personA.id,
       speakerName: personA.name,
       role: `Agent representing ${personA.name}`,
-      text: `Hello ${personB.name.split(' ')[0]}! When our agents matched us for a date at ${venue.name}, I checked out your public profile. The way you approach ${hobbyB} is honestly refreshing.`,
+      text: `Hey ${firstB}! When our agents matched us for a date at ${venue.name}, I immediately looked at your background. I love how you pursue ${hobbyB}—that's rare in a world where everyone seems glued to a screen.`,
       subtext: "Warm smile, leaning forward with engaging eye contact",
-      innerThought: `Their profile really stood out to me. Strong focus on ${interestB}, but grounded. Let's see how they converse in person.`,
-      timestamp: "00:05"
+      innerThought: `Their presence feels genuine right away. They have clear focus on ${interestB}, but zero pretension. Let's see how our conversational rhythm flows.`,
+      timestamp: "00:04"
     },
     {
       speakerId: personB.id,
       speakerName: personB.name,
       role: `Agent representing ${personB.name}`,
-      text: `Thanks ${personA.name.split(' ')[0]}! That means a lot. Most people just glance at the headlines, but the real heart of what I do is about curiosity. I noticed on your feed that you're deeply into ${hobbyA}—how did that become such a staple in your life?`,
+      text: `Thanks ${firstA}! That means a lot. For me, ${hobbyB} is the only way to reset my brain from the daily noise. And I noticed on your feed that you're passionate about ${hobbyA}. How did you first get hooked on that?`,
       subtext: "Genuinely engaged, warm vocal cadence",
-      innerThought: `High emotional intelligence right off the bat. No small-talk fluff; they dive straight into real passions.`,
-      timestamp: "00:28"
+      innerThought: `High emotional intelligence right off the bat. No awkward small-talk; they dive straight into real passions.`,
+      timestamp: "00:26"
     },
     {
       speakerId: personA.id,
       speakerName: personA.name,
       role: `Agent representing ${personA.name}`,
-      text: `It really started because life gets so chaotic in our careers that you need an anchor. For me, ${hobbyA} gives me that flow state where you can't be distracted by notifications or expectations. It connects to why I value ${interestA} so much.`,
+      text: `It honestly began because in my work, there's always a deadline or client expectation. With ${hobbyA}, it's purely tactile. It connects to why I care so much about ${interestA}—it's about understanding what actually makes life feel rich.`,
       subtext: "Reflective, speaking with authentic vulnerability",
-      innerThought: `They listen attentively without interrupting. That directly satisfies my need for ${needA}.`,
-      timestamp: "00:54"
+      innerThought: `They listen attentively without checking their phone or interrupting. That directly fulfills my need for ${needA}.`,
+      timestamp: "00:52"
     },
     {
       speakerId: personB.id,
       speakerName: personB.name,
       role: `Agent representing ${personB.name}`,
-      text: `I completely relate to that flow state. In relationships too, the magic happens when you don't feel like you have to perform. You can just be yourself, share a laugh, and talk about ${interestB} or whatever weird idea is keeping you up at night.`,
+      text: `That completely resonates with me. In relationships too, the magic happens when you don't feel like you have to perform a polished resume. You can just laugh, share what you're struggling with, and talk about ${interestB} or whatever weird idea keeps you up at night.`,
       subtext: "Hearty laugh, making an easy, inviting gesture",
       innerThought: `The conversational ping-pong is natural and effortless. Mutual spark is definitely there.`,
-      timestamp: "01:22"
+      timestamp: "01:18"
     },
     {
       speakerId: personA.id,
       speakerName: personA.name,
       role: `Agent representing ${personA.name}`,
-      text: `Exactly! Life is too short for performative relationships. Tell me—what's an adventure or project you're secretly longing to tackle next that few people know about?`,
+      text: `Exactly! I can't stand performative connections. Here's a question for you: what's an ambition or project you're secretly longing to tackle that few people in your professional circle know about?`,
       subtext: "Eyes lighting up with playful curiosity",
       innerThought: `They check off the big boxes: intellect, humor, emotional security. This date is flying by.`,
-      timestamp: "01:46"
+      timestamp: "01:44"
     },
     {
       speakerId: personB.id,
       speakerName: personB.name,
       role: `Agent representing ${personB.name}`,
-      text: `Honestly? Doing something completely unplugged—maybe exploring quiet coastal trails or working side-by-side on something with zero client deadlines. How about we continue this conversation over a second date next week?`,
+      text: `Doing something completely off the radar—maybe a quiet road trip or creating something tactile with zero metrics attached. How about we continue this over a second date next week? I know a great spot we'd both love.`,
       subtext: "Confident, tender smile, looking directly at them",
       innerThought: `Definitely a yes for date two. Chemistry is genuine, no doubt about it.`,
-      timestamp: "02:10"
+      timestamp: "02:08"
+    },
+    {
+      speakerId: personA.id,
+      speakerName: personA.name,
+      role: `Agent representing ${personA.name}`,
+      text: `You have a deal, ${firstB}. I'll bring the good questions, you bring the recommendations!`,
+      subtext: "Beaming, clinking glasses with genuine delight",
+      innerThought: `Total green flag. Easy banter, shared lifestyle pacing, mutual understanding. 9+/10 date.`,
+      timestamp: "02:22"
     }
   ];
 

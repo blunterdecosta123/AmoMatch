@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import ProfileCard from './components/ProfileCard';
 import ProfileModal from './components/ProfileModal';
@@ -7,10 +7,25 @@ import RankingsView from './components/RankingsView';
 import AddPersonModal from './components/AddPersonModal';
 import SubmissionGuideModal from './components/SubmissionGuideModal';
 import { INITIAL_PROFILES } from './data/initialProfiles';
-import { Heart, Sparkles, Flame, Trophy, Search, PlusCircle, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Heart, Sparkles, Flame, Trophy, Search, PlusCircle, ExternalLink, RotateCcw } from 'lucide-react';
 
 export default function App() {
-  const [profiles, setProfiles] = useState(INITIAL_PROFILES);
+  // Load initial profiles + any saved custom profiles from localStorage
+  const [profiles, setProfiles] = useState(() => {
+    try {
+      const saved = localStorage.getItem('amomatch_custom_profiles');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return [...parsed, ...INITIAL_PROFILES];
+        }
+      }
+    } catch (e) {
+      console.warn("Could not read custom profiles from localStorage:", e);
+    }
+    return INITIAL_PROFILES;
+  });
+
   const [activeTab, setActiveTab] = useState('profiles'); // 'profiles' | 'arena' | 'rankings'
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -41,7 +56,6 @@ export default function App() {
   // Handlers
   const handleDateAgent = (profile) => {
     setSelectedAgentA(profile);
-    // Pick another agent who isn't this one
     const other = profiles.find(p => p.id !== profile.id) || profiles[0];
     setSelectedAgentB(other);
     setActiveTab('arena');
@@ -59,10 +73,37 @@ export default function App() {
   };
 
   const handlePersonAdded = (newProfile) => {
-    setProfiles(prev => [newProfile, ...prev]);
+    setProfiles(prev => {
+      const updated = [newProfile, ...prev];
+      try {
+        const customOnly = updated.filter(p => p.id.startsWith('custom-'));
+        localStorage.setItem('amomatch_custom_profiles', JSON.stringify(customOnly));
+      } catch (e) {
+        console.warn("Could not save to localStorage:", e);
+      }
+      return updated;
+    });
+
+    // Automatically set up Date Arena and Rankings for the new agent
+    setSelectedAgentA(newProfile);
+    setSelectedAgentB(INITIAL_PROFILES[0]);
+    setRankingsPersonId(newProfile.id);
+
     setIsAddPersonModalOpen(false);
     setInspectedProfile(newProfile); // Open their profile page immediately!
   };
+
+  const handleResetCustomProfiles = () => {
+    if (window.confirm("Reset dating pool back to the 26 verified initial people?")) {
+      localStorage.removeItem('amomatch_custom_profiles');
+      setProfiles(INITIAL_PROFILES);
+      setSelectedAgentA(INITIAL_PROFILES[2]);
+      setSelectedAgentB(INITIAL_PROFILES[1]);
+      setRankingsPersonId(INITIAL_PROFILES[0].id);
+    }
+  };
+
+  const hasCustomProfiles = profiles.some(p => p.id.startsWith('custom-'));
 
   return (
     <div className="min-h-screen bg-[#090a0f] text-slate-100 flex flex-col font-sans selection:bg-rose-500 selection:text-white">
@@ -101,7 +142,7 @@ export default function App() {
                     <span className="text-2xl sm:text-3xl font-black text-white block">
                       {profiles.length}
                     </span>
-                    <span className="text-xs text-slate-400 font-medium">Real People Analyzed</span>
+                    <span className="text-xs text-slate-400 font-medium">Real People in Pool</span>
                   </div>
                   <div>
                     <span className="text-2xl sm:text-3xl font-black text-rose-400 block">
@@ -163,8 +204,20 @@ export default function App() {
                 />
               </div>
 
-              <div className="text-xs text-slate-400">
-                Showing <strong className="text-white font-bold">{filteredProfiles.length}</strong> active agents
+              <div className="flex items-center space-x-3 text-xs text-slate-400">
+                {hasCustomProfiles && (
+                  <button
+                    onClick={handleResetCustomProfiles}
+                    className="flex items-center space-x-1 text-slate-400 hover:text-rose-400 text-xs underline"
+                    title="Clear added custom profiles"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset to 26</span>
+                  </button>
+                )}
+                <span>
+                  Showing <strong className="text-white font-bold">{filteredProfiles.length}</strong> active agents
+                </span>
               </div>
             </div>
 
