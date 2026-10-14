@@ -64,7 +64,7 @@ app.use((req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 AmoMatch Server running on http://localhost:${PORT}`);
   console.log(`📡 Apify Scraper Engine active`);
 });
