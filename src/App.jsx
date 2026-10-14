@@ -5,7 +5,6 @@ import ProfileModal from './components/ProfileModal';
 import DateArena from './components/DateArena';
 import RankingsView from './components/RankingsView';
 import AddPersonModal from './components/AddPersonModal';
-import SubmissionGuideModal from './components/SubmissionGuideModal';
 import { INITIAL_PROFILES } from './data/initialProfiles';
 import { Heart, Sparkles, Flame, Trophy, Search, PlusCircle, ExternalLink, RotateCcw } from 'lucide-react';
 
@@ -32,7 +31,6 @@ export default function App() {
   // Modals & Selections
   const [inspectedProfile, setInspectedProfile] = useState(null);
   const [isAddPersonModalOpen, setIsAddPersonModalOpen] = useState(false);
-  const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
 
   // Date Arena State
   const [selectedAgentA, setSelectedAgentA] = useState(INITIAL_PROFILES[2]); // Sara Dietschy
@@ -113,7 +111,6 @@ export default function App() {
         setActiveTab={setActiveTab}
         totalProfiles={profiles.length}
         onAddPersonClick={() => setIsAddPersonModalOpen(true)}
-        onDocsClick={() => setIsSubmissionGuideOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -288,12 +285,6 @@ export default function App() {
         <AddPersonModal
           onClose={() => setIsAddPersonModalOpen(false)}
           onPersonAdded={handlePersonAdded}
-        />
-      )}
-
-      {isSubmissionGuideOpen && (
-        <SubmissionGuideModal
-          onClose={() => setIsSubmissionGuideOpen(false)}
         />
       )}
     </div>

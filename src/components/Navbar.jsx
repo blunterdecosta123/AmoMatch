@@ -74,15 +74,6 @@ export default function Navbar({ activeTab, setActiveTab, totalProfiles, onAddPe
           {/* Action Buttons */}
           <div className="flex items-center space-x-3">
             <button
-              onClick={onDocsClick}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 transition-colors"
-              title="View submission details, 200-char explanation & technical stack"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">Submission Specs</span>
-            </button>
-
-            <button
               onClick={onAddPersonClick}
               className="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white shadow-lg shadow-rose-500/25 transition-all transform hover:-translate-y-0.5"
             >
